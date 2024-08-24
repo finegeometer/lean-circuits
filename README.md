@@ -19,4 +19,5 @@ Here's a guide to the files in the project.
 - **Circuit**: A description of the behavior of a circuit, as a relation on the voltages and currents at its terminals.
 - **Network**: An abstract network, consisting of a number of components that have been wired together.
 - **Interp**: The relationship between abstract networks and concerete circuits.
+- **Component**: Basic electrical components, such as resistors, capacitors, inductors, and transistors.
 
