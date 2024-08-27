@@ -1,5 +1,6 @@
 import «Circuits».Circuit.Directed
 import Mathlib.Analysis.Calculus.Deriv.Add
+import Mathlib.Analysis.Calculus.Deriv.Mul
 
 -- In `«Circuits».Circuit`, it was unimportant whether the current values
 -- represented the currents *into* or *out of* the circuit.
@@ -86,3 +87,67 @@ theorem inductor_symm : (inductor L).reverse = inductor L := by
   }
   rw [this, <-neg_sub]
   apply HasDerivAt.neg; exact (H t).2
+
+--------------------------------------------------------------------------------
+-- Single-terminal components.
+
+def voltageSource (V : ℝ) : Circuit.Directed Empty Unit :=
+  {bhvr | ∀ t, (bhvr (Sum.inr ()) t).1 = V}
+
+def currentSource (I : ℝ) : Circuit.Directed Empty Unit :=
+  {bhvr | ∀ t, (bhvr (Sum.inr ()) t).2 = -I}
+
+def pull (V R : ℝ) : Circuit.Directed Empty Unit :=
+  {bhvr | ∀ t, (bhvr (Sum.inr ()) t).2 * R = (bhvr (Sum.inr ()) t).1 - V}
+
+def capacitate (C : ℝ) : Circuit.Directed Empty Unit :=
+  {bhvr | ∀ t, HasDerivAt (fun t => C * (bhvr (Sum.inr ()) t).1) (bhvr (Sum.inr ()) t).2 t}
+
+--------------------------------------------------------------------------------
+-- Theorems.
+
+theorem pull_spec : pull V R = (voltageSource V).comp (resistor R) := by
+  ext input output
+  simp [Circuit.Directed.mem_comp]
+  constructor
+  · intro H
+    exists fun () t => (V, (output () t).2)
+    constructor
+    · intro t; rfl
+    · intro t; simp
+      specialize H t; simp at H
+      linarith [H]
+  · intro ⟨middle,H1,H2⟩ t; simp
+    specialize H1 t; specialize H2 t; obtain ⟨H2,H3⟩ := H2
+    simp at H1 H2 H3
+    calc -((output () t).2 * R)
+      _ = -((middle () t).2 * R) := by congr 2; linarith [H2]
+      _ = (output () t).1 - V := by rw [H3, H1]; linarith
+
+theorem capacitate_spec : capacitate C = (voltageSource V).comp (capacitor C) := by
+  ext input output
+  simp [Circuit.Directed.mem_comp]
+  constructor
+  · intro H
+    exists fun () t => (V, (output () t).2)
+    constructor
+    · intro t; rfl
+    · intro t; simp [mul_sub]
+      have:= HasDerivAt.const_sub (C * V) (H t)
+      simp at this; exact this
+  · intro ⟨middle,H1,H2⟩ t; simp
+    specialize H2 t; obtain ⟨H2,H3⟩ := H2
+    simp at H2 H3
+
+    have H3 := HasDerivAt.const_sub (C * V) H3
+
+    have: (-(middle () t).2) = (-(output () t).2) := by linarith [H2]
+    rw [this] at H3
+
+    have: (fun t => C * V - C * ((middle () t).1 - (output () t).1)) = (fun t => C * (output () t).1) := by
+      funext t
+      have:= H1 t; simp at this; rw [this]
+      ring_nf
+    rw [this] at H3
+
+    exact H3

@@ -182,3 +182,56 @@ theorem Directed.mem_series {n : ℕ} (α : Fin n.succ → 𝔽) (c : (i : Fin n
           _ = ∑ x ∈ (S' 0).toFinset.disjSum (S' (Fin.last n)).toFinset, Sum.elim (fun x => (bhvr 0 x t).2) (fun x => -(bhvr (Fin.last n) x t).2) x := by
             rw [Finset.sum_disj_sum]; simp [Finset.sum_neg_distrib]; linarith
           _ = _ := by congr <;> ext x <;> cases x <;> simp [S']
+
+--------------------------------------------------------------------------------
+
+def Directed.id (α : 𝔽) : Directed α α :=
+  Directed.series 0 (fun _ => α) Fin.elim0
+
+def Directed.comp {α β γ : 𝔽} (c1 : Directed α β) (c2 : Directed β γ) : Directed α γ :=
+  Directed.series 2
+    (fun i => match i with | 0 => α | 1 => β | 2 => γ)
+    (fun i => match i with | 0 => c1 | 1 => c2)
+
+
+
+theorem Directed.mem_id {α : 𝔽} {input output : α → ℝ → ℝ × ℝ} :
+  (input, output) ∈ Directed.id α ↔ input = output
+:= by
+  rw [Directed.id, Directed.mem_series (fun _ => α)]
+  constructor
+  · intro ⟨_,_,H1,H2⟩
+    rw [H1,H2]; rfl
+  · intro eq; cases eq
+    exists fun _ => input
+    constructor
+    · apply Fin.rec0
+    · constructor <;> rfl
+
+theorem Directed.mem_comp {α β γ : 𝔽} {input : α → ℝ → ℝ × ℝ} {output : γ → ℝ → ℝ × ℝ}
+  {c1 : Circuit.Directed α β} {c2 : Circuit.Directed β γ} :
+  (input, output) ∈ Directed.comp c1 c2 ↔
+  ∃ middle, (input, middle) ∈ c1 ∧ (middle, output) ∈ c2
+:= by
+  trans; apply Directed.mem_series
+  constructor
+  · intro ⟨bhvr,pf,H1,H2⟩
+    exists bhvr 1
+    constructor
+    · rw [H1]; exact pf 0
+    · rw [H2]; exact pf 1
+  · intro ⟨middle,H1,H2⟩
+    exists fun i => match i with | 0 => input | 1 => middle | 2 => output
+    constructor
+    · exact fun i => match i with | 0 => H1 | 1 => H2
+    · constructor <;> rfl
+
+@[ext]
+theorem Directed.ext (c1 c2 : Directed α β) :
+  (∀ input output, (input, output) ∈ c1 ↔ (input, output) ∈ c2) → c1 = c2
+:= by
+  intro H
+  unfold Directed Circuit; ext bhvr
+  specialize H (bhvr ∘ Sum.inl) (fun x t => let (V,I) := bhvr (Sum.inr x) t; (V,-I))
+  unfold Circuit.instMembershipProdForallTForallRealDirected at H; simp at H
+  rw [<-Sum.elim_comp_inl_inr bhvr]; exact H
