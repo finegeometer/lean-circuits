@@ -1,6 +1,19 @@
 import Batteries.Data.Sum.Basic
 import Mathlib.Data.Finite.Basic
 
+
+def Function.composeTo {n : ℕ} (α : Fin n.succ → Type) (f : (i : Fin n) → α i.castSucc → α i.succ) (i : Fin n.succ) : α 0 → α i :=
+  fun base_case => Fin.induction base_case f i
+abbrev Function.composeN {n : ℕ} (α : Fin n.succ → Type) (f : (i : Fin n) → α i.castSucc → α i.succ) : α 0 → α (Fin.last n) :=
+  Function.composeTo α f (Fin.last n)
+
+theorem Function.composeTo.step {n : ℕ} (α : Fin n.succ → Type) (f : (i : Fin n) → α i.castSucc → α i.succ) (i : Fin n) :
+  composeTo α f i.succ = f i ∘ composeTo α f i.castSucc
+:= by unfold composeTo; simp; rfl
+
+
+
+
 def Coequalizer (f g : α → β) : Type := @Quot β (fun a b => ∃ x, a = f x ∧ b = g x)
 def Coequalizer.inj {f g : α → β} : β → Coequalizer f g := Quot.mk _
 def Coequalizer.lift {f g : α → β} (h : β → γ) (pf : (a : α) → h (f a) = h (g a)) (x : Coequalizer f g) : γ :=
