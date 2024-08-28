@@ -25,6 +25,12 @@ def Directed.parallel (ι : 𝔽) {α β : ι → 𝔽}
 def Directed.reverse (c : Directed α β) : Directed β α :=
   c.map (𝔽.Cospan.ofEquiv (by exact Equiv.sumComm α β))
 
+def Directed.wire (f : 𝔽.Cospan α β) : Directed α β :=
+  (@merge Empty Empty.elim Empty.rec).map
+    ⟨ f.center
+    , Empty.elim ∘ Sigma.fst
+    , Sum.elim f.fwd f.bwd
+    ⟩
 
 --------------------------------------------------------------------------------
 
@@ -34,20 +40,89 @@ instance {α β : 𝔽} : Membership ((α → ℝ → ℝ × ℝ) × (β → ℝ
     intro ⟨inputs, outputs⟩ circ
     exact Sum.elim inputs (fun x t => ((outputs x t).1, -(outputs x t).2)) ∈ circ
 
+@[ext]
+theorem Directed.ext (c1 c2 : Directed α β) :
+  (∀ input output, (input, output) ∈ c1 ↔ (input, output) ∈ c2) → c1 = c2
+:= by
+  intro H
+  unfold Directed Circuit; ext bhvr
+  specialize H (bhvr ∘ Sum.inl) (fun x t => let (V,I) := bhvr (Sum.inr x) t; (V,-I))
+  unfold Circuit.instMembershipProdForallTForallRealDirected at H; simp at H
+  rw [<-Sum.elim_comp_inl_inr bhvr]; exact H
+
 theorem Directed.mem_reverse (c : Directed α β) :
   (input, output) ∈ Directed.reverse c ↔
   ( fun x t => let (V,I) := output x t; (V,-I)
   , fun x t => let (V,I) := input x t; (V,-I)
   ) ∈ c
 := by
-  rw [reverse, Circuit.map_ofEquiv]
+  rw [reverse, Circuit.map_ofEquiv, id_eq]
   unfold Directed Circuit.instMembershipProdForallTForallRealDirected
   simp only [Set.preimage, id_eq, neg_neg]; rw [Set.mem_setOf, iff_eq_eq]
   congr; funext x; cases x <;> rfl
 
+theorem Directed.mem_parallel {ι : 𝔽} {α β : ι → 𝔽} (c : (i : ι) → Directed (α i) (β i))
+  (input : (i : ι) × α i → ℝ → ℝ × ℝ) (output : (i : ι) × β i → ℝ → ℝ × ℝ) :
+  (input, output) ∈ parallel ι c ↔
+  ∀ i : ι, (fun x => input ⟨i,x⟩, fun x => output ⟨i,x⟩) ∈ c i
+:= by
+  unfold Directed Circuit.instMembershipProdForallTForallRealDirected
+  simp only [parallel, Circuit.map_ofEquiv, id_eq]
+  rw [Set.mem_preimage, merge]
+  simp only [Set.mem_setOf_eq, Function.comp_apply, Equiv.sigmaSumDistrib_apply, Sum.elim_map]
+  rfl
+
 
 open Classical
 noncomputable local instance (α : Type) [Finite α] : Fintype α := Fintype.ofFinite α
+
+
+theorem Directed.mem_wire (f : 𝔽.Cospan α β) :
+  (input, output) ∈ Directed.wire f ↔ ∀ t, Kirchhoff f (fun x => input x t) (fun x => output x t)
+:= by
+  constructor
+  · intro ⟨bhvr,_,H⟩ t
+    constructor
+    · obtain ⟨v, _, H⟩ := (H t).1
+      exists v; constructor
+      · exact fun x => H (Sum.inl x)
+      · exact fun x => H (Sum.inr x)
+    · intro S
+      have:= calc 0
+        _ = ∑ x ∈ _, (bhvr x t).2 := by simp
+        _ = _ := (H t).2 S
+        _ = ∑ x ∈ Finset.disjSum
+          (Finset.filter (fun x => f.fwd x ∈ S) Finset.univ)
+          (Finset.filter (fun x => f.bwd x ∈ S) Finset.univ),
+          (Sum.elim (fun x => (input x t).2) (fun x => -(output x t).2) x )
+        := by
+          congr
+          · ext x; cases x <;> simp [Finset.mem_disjSum]
+          · funext x; cases x <;> simp
+        _ = ∑ x with f.fwd x ∈ S, (input x t).2 + - ∑ x with f.bwd x ∈ S, (output x t).2
+        := by simp
+      linarith [this]
+  · intro H
+    exists Empty.elim ∘ Sigma.fst
+    constructor; exact fun i : Empty => i.elim
+    intro t
+    constructor
+    · obtain ⟨v, H1, H2⟩ := (H t).1
+      exists v; constructor; exact fun ⟨i,_⟩ => i.elim
+      intro x; cases x <;> simp [H1, H2]
+    · intro S
+      calc _
+        _ = (0 : ℝ) := by simp
+        _ = ∑ x ∈ Finset.disjSum
+          (Finset.filter (fun x => f.fwd x ∈ S) Finset.univ)
+          (Finset.filter (fun x => f.bwd x ∈ S) Finset.univ),
+          (Sum.elim (fun x => (input x t).2) (fun x => -(output x t).2) x ) := by simp [(H t).2]
+        _ = _ := by
+          congr
+          · ext x; cases x <;> simp [Finset.mem_disjSum]
+          · funext x; cases x <;> simp
+
+
 
 private lemma telescope {n : ℕ} (f : Fin n.succ → ℝ) :
   ∑ i : Fin n, (f i.castSucc - f i.succ) = f 0 - f (Fin.last n)
@@ -183,6 +258,7 @@ theorem Directed.mem_series {n : ℕ} (α : Fin n.succ → 𝔽) (c : (i : Fin n
             rw [Finset.sum_disj_sum]; simp [Finset.sum_neg_distrib]; linarith
           _ = _ := by congr <;> ext x <;> cases x <;> simp [S']
 
+
 --------------------------------------------------------------------------------
 
 def Directed.id (α : 𝔽) : Directed α α :=
@@ -225,13 +301,3 @@ theorem Directed.mem_comp {α β γ : 𝔽} {input : α → ℝ → ℝ × ℝ} 
     constructor
     · exact fun i => match i with | 0 => H1 | 1 => H2
     · constructor <;> rfl
-
-@[ext]
-theorem Directed.ext (c1 c2 : Directed α β) :
-  (∀ input output, (input, output) ∈ c1 ↔ (input, output) ∈ c2) → c1 = c2
-:= by
-  intro H
-  unfold Directed Circuit; ext bhvr
-  specialize H (bhvr ∘ Sum.inl) (fun x t => let (V,I) := bhvr (Sum.inr x) t; (V,-I))
-  unfold Circuit.instMembershipProdForallTForallRealDirected at H; simp at H
-  rw [<-Sum.elim_comp_inl_inr bhvr]; exact H

@@ -55,6 +55,7 @@ def 𝔽.Cospan.comp (f : 𝔽.Cospan α β) (g : 𝔽.Cospan β γ) : 𝔽.Cosp
   center := Pushout f.bwd g.fwd
   fwd := Pushout.inl ∘ f.fwd
   bwd := Pushout.inr ∘ g.bwd
+def 𝔽.Cospan.reverse (f : 𝔽.Cospan α β) : 𝔽.Cospan β α := ⟨f.center, f.bwd, f.fwd⟩
 def 𝔽.Cospan.merge [Finite ι] {α β : ι → 𝔽} (f : (i : ι) → 𝔽.Cospan (α i) (β i)) : 𝔽.Cospan ((i : ι) × α i) ((i : ι) × β i) where
   center := (i : ι) × (f i).center
   fwd := Sigma.map _root_.id (fun i a => (f i).fwd a)
