@@ -79,3 +79,13 @@ theorem Circuit.merge_map (ι : 𝔽) (α β : ι → 𝔽) (f : (i : ι) → �
   · intro ⟨bhvr', pf, H⟩ i
     exists fun x => bhvr' ⟨i,x⟩, pf i
     intro t; exact H t i
+
+--------------------------------------------------------------------------------
+
+instance : CompleteLattice (Circuit α) := by
+  unfold Circuit
+  exact inferInstance
+
+theorem Circuit.le_def {c1 c2 : Circuit α} :
+  c1 ≤ c2 ↔ ∀ bhvr, bhvr ∈ c1 → bhvr ∈ c2
+:= by rfl

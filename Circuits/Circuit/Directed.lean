@@ -50,6 +50,37 @@ theorem Directed.ext (c1 c2 : Directed α β) :
   unfold Circuit.instMembershipProdForallTForallRealDirected at H; simp at H
   rw [<-Sum.elim_comp_inl_inr bhvr]; exact H
 
+def Directed.ofPred {α β : 𝔽} (P : (α → ℝ → ℝ × ℝ) → (β → ℝ → ℝ × ℝ) → Prop) : Directed α β := by
+    unfold Directed
+    exact {bhvr | P (fun x t => bhvr (Sum.inl x) t) (fun x t => let (V,I) := bhvr (Sum.inr x) t; (V,-I))}
+
+@[simp]
+theorem Directed.mem_ofPred :
+  x ∈ Directed.ofPred P ↔ P x.1 x.2
+:= by
+  unfold ofPred Circuit.instMembershipProdForallTForallRealDirected
+  simp; rw [Set.mem_setOf]; simp
+
+instance : CompleteLattice (Directed α β) := by
+  unfold Directed
+  exact inferInstance
+
+theorem Directed.le_def {c1 c2 : Directed α β} :
+  c1 ≤ c2 ↔ ∀ input output, (input, output) ∈ c1 → (input, output) ∈ c2
+:= by
+  trans; exact Circuit.le_def
+  constructor
+  · intro H input output
+    exact H (Sum.elim input (fun x t => let (V,I) := output x t; (V,-I)))
+  · intro H bhvr
+    specialize H (fun x t => bhvr (Sum.inl x) t) (fun x t => let (V,I) := bhvr (Sum.inr x) t; (V,-I))
+    unfold Circuit.instMembershipProdForallTForallRealDirected at H; simp at H
+    change (Sum.elim (bhvr ∘ Sum.inl) (bhvr ∘ Sum.inr)) ∈ _ →
+           (Sum.elim (bhvr ∘ Sum.inl) (bhvr ∘ Sum.inr)) ∈ _ at H
+    simp at H; exact H
+
+------------------------------------------------------------------------------
+
 theorem Directed.mem_reverse (c : Directed α β) :
   (input, output) ∈ Directed.reverse c ↔
   ( fun x t => let (V,I) := output x t; (V,-I)
