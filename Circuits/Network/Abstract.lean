@@ -1,21 +1,23 @@
 import «Circuits».Utils
 
-structure Network (Component : Type) (Terminal : Component → 𝔽) (α : 𝔽) where
+namespace Network
+
+structure Abstract (Component : Type) (Terminal : Component → 𝔽) (α : 𝔽) where
   Node : 𝔽
   component : Node → Component
   wiring : 𝔽.Cospan ((n : Node) × Terminal (component n)) α
 
-def Network.single (c : Component) : Network Component Terminal (Terminal c) where
+def Abstract.single (c : Component) : Abstract Component Terminal (Terminal c) where
   Node := Unit
   component := fun () => c
   wiring := 𝔽.Cospan.ofFwd (fun ⟨(),x⟩ => x)
 
-def Network.map (f : 𝔽.Cospan α β) (net : Network Component Terminal α) : Network Component Terminal β where
+def Abstract.map (f : 𝔽.Cospan α β) (net : Abstract Component Terminal α) : Abstract Component Terminal β where
   Node := net.Node
   component := net.component
   wiring := net.wiring.comp f
 
-def Network.merge (ι : 𝔽) (α : ι → 𝔽) (nets : (i : ι) → Network Component Terminal (α i)) : Network Component Terminal ⟨(i : ι) × α i⟩ where
+def Abstract.merge (ι : 𝔽) (α : ι → 𝔽) (nets : (i : ι) → Abstract Component Terminal (α i)) : Abstract Component Terminal ⟨(i : ι) × α i⟩ where
   Node := (i : ι) × (nets i).Node
   component := fun ⟨i,n⟩ => (nets i).component n
   wiring := 𝔽.Cospan.comp
