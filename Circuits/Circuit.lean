@@ -14,8 +14,8 @@ def Circuit.merge (ι : 𝔽) {α : ι → 𝔽} (circ : (i : ι) → Circuit (�
 --------------------------------------------------------------------------------
 -- Theorems
 
-theorem Circuit.map.congr {f g : 𝔽.Cospan α β} (e : f.Equiv g) (c : Circuit α) : c.map f = c.map g := by
-  unfold map; simp [Kirchhoff.congr e]
+-- theorem Circuit.map.congr {f g : 𝔽.Cospan α β} (e : f.Equiv g) (c : Circuit α) : c.map f = c.map g := by
+--   unfold map; simp [Kirchhoff.congr e]
 
 theorem Circuit.map_ofEquiv {α β : 𝔽} (f : α ≃ β) (c : Circuit α) :
   c.map (𝔽.Cospan.ofEquiv f) = by unfold Circuit at *; exact (fun bhvr => bhvr ∘ f) ⁻¹' c

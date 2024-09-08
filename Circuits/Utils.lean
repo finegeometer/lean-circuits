@@ -65,93 +65,93 @@ def 𝔽.Cospan.ofFwd {α β : 𝔽} (f : α → β) : 𝔽.Cospan α β := ⟨�
 abbrev 𝔽.Cospan.ofEquiv {α β : 𝔽} (f : α ≃ β) : 𝔽.Cospan α β := 𝔽.Cospan.ofFwd f
 
 
-structure 𝔽.Cospan.Equiv (f g : Cospan α β) where
-  center : f.center ≃ g.center
-  fwd : center ∘ f.fwd = g.fwd
-  bwd : center ∘ f.bwd = g.bwd
+-- structure 𝔽.Cospan.Equiv (f g : Cospan α β) where
+--   center : f.center ≃ g.center
+--   fwd : center ∘ f.fwd = g.fwd
+--   bwd : center ∘ f.bwd = g.bwd
 
-def 𝔽.Cospan.Equiv.refl (f : Cospan α α) : f.Equiv f := ⟨_root_.Equiv.refl _, rfl, rfl⟩
-def 𝔽.Cospan.Equiv.symm {f g : Cospan α β} (e : f.Equiv g) : g.Equiv f where
-  center := e.center.symm
-  fwd := by rw [<-e.fwd, <-Function.comp.assoc]; simp
-  bwd := by rw [<-e.bwd, <-Function.comp.assoc]; simp
-def 𝔽.Cospan.Equiv.trans {f g h : Cospan α β} (e1 : f.Equiv g) (e2 : g.Equiv h) : f.Equiv h where
-  center := e1.center.trans e2.center
-  fwd := by rw [<-e2.fwd, <-e1.fwd]; rfl
-  bwd := by rw [<-e2.bwd, <-e1.bwd]; rfl
+-- def 𝔽.Cospan.Equiv.refl (f : Cospan α α) : f.Equiv f := ⟨_root_.Equiv.refl _, rfl, rfl⟩
+-- def 𝔽.Cospan.Equiv.symm {f g : Cospan α β} (e : f.Equiv g) : g.Equiv f where
+--   center := e.center.symm
+--   fwd := by rw [<-e.fwd, <-Function.comp.assoc]; simp
+--   bwd := by rw [<-e.bwd, <-Function.comp.assoc]; simp
+-- def 𝔽.Cospan.Equiv.trans {f g h : Cospan α β} (e1 : f.Equiv g) (e2 : g.Equiv h) : f.Equiv h where
+--   center := e1.center.trans e2.center
+--   fwd := by rw [<-e2.fwd, <-e1.fwd]; rfl
+--   bwd := by rw [<-e2.bwd, <-e1.bwd]; rfl
 
-instance : Trans (@𝔽.Cospan.Equiv α β) (@𝔽.Cospan.Equiv α β) (@𝔽.Cospan.Equiv α β) where
-  trans := 𝔽.Cospan.Equiv.trans
+-- instance : Trans (@𝔽.Cospan.Equiv α β) (@𝔽.Cospan.Equiv α β) (@𝔽.Cospan.Equiv α β) where
+--   trans := 𝔽.Cospan.Equiv.trans
 
-def 𝔽.Cospan.id_ofFwd {α : 𝔽} : Equiv (ofFwd (fun x : α => x)) id := Equiv.refl _
-def 𝔽.Cospan.comp_ofFwd {α β γ : 𝔽} (f : α → β) (g : β → γ) : Equiv (ofFwd (g ∘ f)) (comp (ofFwd f) (ofFwd g)) where
-  center.toFun := Pushout.inr
-  center.invFun := Pushout.lift g _root_.id (fun _ => rfl)
-  center.left_inv := by simp [Function.LeftInverse, Pushout.lift_inr]
-  center.right_inv := by
-    apply Pushout.ind <;> intro _
-    · symm; apply Pushout.sound
-    · rfl
-  fwd := by funext a; simp [ofFwd, comp, <-Pushout.sound (g := g)]
-  bwd := rfl
+-- def 𝔽.Cospan.id_ofFwd {α : 𝔽} : Equiv (ofFwd (fun x : α => x)) id := Equiv.refl _
+-- def 𝔽.Cospan.comp_ofFwd {α β γ : 𝔽} (f : α → β) (g : β → γ) : Equiv (ofFwd (g ∘ f)) (comp (ofFwd f) (ofFwd g)) where
+--   center.toFun := Pushout.inr
+--   center.invFun := Pushout.lift g _root_.id (fun _ => rfl)
+--   center.left_inv := by simp [Function.LeftInverse, Pushout.lift_inr]
+--   center.right_inv := by
+--     apply Pushout.ind <;> intro _
+--     · symm; apply Pushout.sound
+--     · rfl
+--   fwd := by funext a; simp [ofFwd, comp, <-Pushout.sound (g := g)]
+--   bwd := rfl
 
-def 𝔽.Cospan.comp.assoc {α β γ δ : 𝔽} (f : Cospan α β) (g : Cospan β γ) (h : Cospan γ δ) :
-  ((f.comp g).comp h).Equiv (f.comp (g.comp h))
-where
-  center.toFun := Pushout.lift (Pushout.lift Pushout.inl (Pushout.inr ∘ Pushout.inl) (by apply Pushout.sound)) (Pushout.inr ∘ Pushout.inr) $ by intro; change Pushout.inr _ = Pushout.inr _; congr; apply Pushout.sound
-  center.invFun := Pushout.lift (Pushout.inl ∘ Pushout.inl) (Pushout.lift (Pushout.inl ∘ Pushout.inr) Pushout.inr (by apply Pushout.sound)) $ by intro; change Pushout.inl _ = Pushout.inl _; congr; apply Pushout.sound
-  center.left_inv := by
-    apply Pushout.ind
-    apply Pushout.ind
-    intro; rfl
-    intro; rfl
-    intro; rfl
-  center.right_inv := by
-    apply Pushout.ind
-    intro; rfl
-    apply Pushout.ind
-    intro; rfl
-    intro; rfl
-  fwd := rfl
-  bwd := rfl
+-- def 𝔽.Cospan.comp.assoc {α β γ δ : 𝔽} (f : Cospan α β) (g : Cospan β γ) (h : Cospan γ δ) :
+--   ((f.comp g).comp h).Equiv (f.comp (g.comp h))
+-- where
+--   center.toFun := Pushout.lift (Pushout.lift Pushout.inl (Pushout.inr ∘ Pushout.inl) (by apply Pushout.sound)) (Pushout.inr ∘ Pushout.inr) $ by intro; change Pushout.inr _ = Pushout.inr _; congr; apply Pushout.sound
+--   center.invFun := Pushout.lift (Pushout.inl ∘ Pushout.inl) (Pushout.lift (Pushout.inl ∘ Pushout.inr) Pushout.inr (by apply Pushout.sound)) $ by intro; change Pushout.inl _ = Pushout.inl _; congr; apply Pushout.sound
+--   center.left_inv := by
+--     apply Pushout.ind
+--     apply Pushout.ind
+--     intro; rfl
+--     intro; rfl
+--     intro; rfl
+--   center.right_inv := by
+--     apply Pushout.ind
+--     intro; rfl
+--     apply Pushout.ind
+--     intro; rfl
+--     intro; rfl
+--   fwd := rfl
+--   bwd := rfl
 
-def 𝔽.Cospan.comp.lunit {α β : 𝔽} (f : Cospan α β) : (id.comp f).Equiv f where
-  center.toFun := Pushout.lift f.fwd _root_.id $ by intro; rfl
-  center.invFun := Pushout.inr
-  center.left_inv := by
-    apply Pushout.ind
-    intro; symm; apply Pushout.sound
-    intro; rfl
-  center.right_inv := by intro; rfl
-  fwd := rfl
-  bwd := rfl
+-- def 𝔽.Cospan.comp.lunit {α β : 𝔽} (f : Cospan α β) : (id.comp f).Equiv f where
+--   center.toFun := Pushout.lift f.fwd _root_.id $ by intro; rfl
+--   center.invFun := Pushout.inr
+--   center.left_inv := by
+--     apply Pushout.ind
+--     intro; symm; apply Pushout.sound
+--     intro; rfl
+--   center.right_inv := by intro; rfl
+--   fwd := rfl
+--   bwd := rfl
 
-def 𝔽.Cospan.comp.runit {α β : 𝔽} (f : Cospan α β) : (f.comp id).Equiv f where
-  center.invFun := Pushout.inl
-  center.toFun := Pushout.lift _root_.id f.bwd $ by intro; rfl
-  center.left_inv := by
-    apply Pushout.ind
-    intro; rfl
-    intro; apply Pushout.sound
-  center.right_inv := by intro; rfl
-  fwd := rfl
-  bwd := rfl
+-- def 𝔽.Cospan.comp.runit {α β : 𝔽} (f : Cospan α β) : (f.comp id).Equiv f where
+--   center.invFun := Pushout.inl
+--   center.toFun := Pushout.lift _root_.id f.bwd $ by intro; rfl
+--   center.left_inv := by
+--     apply Pushout.ind
+--     intro; rfl
+--     intro; apply Pushout.sound
+--   center.right_inv := by intro; rfl
+--   fwd := rfl
+--   bwd := rfl
 
-def 𝔽.Cospan.congr_comp {α β γ : 𝔽} (f g : Cospan α β) (h : Cospan β γ)
-  (H : f.Equiv g) : (f.comp h).Equiv (g.comp h)
-where
-  center.toFun := Pushout.lift (Pushout.inl ∘ H.center) Pushout.inr $ by intro; change (_ ∘ _ ∘ f.bwd) _ = _; rw [H.bwd]; apply Pushout.sound
-  center.invFun := Pushout.lift (Pushout.inl ∘ H.center.symm) Pushout.inr $ by intro; change (_ ∘ _ ∘ g.bwd) _ = _; rw [<-H.bwd]; simp only [Function.comp_apply, Equiv.symm_apply_apply]; apply Pushout.sound
-  center.left_inv := by
-    apply Pushout.ind
-    · intro; change Pushout.inl _ = _; simp
-    · intro; rfl
-  center.right_inv := by
-    apply Pushout.ind
-    · intro; change Pushout.inl _ = _; simp
-    · intro; rfl
-  fwd := by funext; change Pushout.inl _ = Pushout.inl _; rw [<-H.fwd]; rfl
-  bwd := by funext; rfl
+-- def 𝔽.Cospan.congr_comp {α β γ : 𝔽} (f g : Cospan α β) (h : Cospan β γ)
+--   (H : f.Equiv g) : (f.comp h).Equiv (g.comp h)
+-- where
+--   center.toFun := Pushout.lift (Pushout.inl ∘ H.center) Pushout.inr $ by intro; change (_ ∘ _ ∘ f.bwd) _ = _; rw [H.bwd]; apply Pushout.sound
+--   center.invFun := Pushout.lift (Pushout.inl ∘ H.center.symm) Pushout.inr $ by intro; change (_ ∘ _ ∘ g.bwd) _ = _; rw [<-H.bwd]; simp only [Function.comp_apply, Equiv.symm_apply_apply]; apply Pushout.sound
+--   center.left_inv := by
+--     apply Pushout.ind
+--     · intro; change Pushout.inl _ = _; simp
+--     · intro; rfl
+--   center.right_inv := by
+--     apply Pushout.ind
+--     · intro; change Pushout.inl _ = _; simp
+--     · intro; rfl
+--   fwd := by funext; change Pushout.inl _ = Pushout.inl _; rw [<-H.fwd]; rfl
+--   bwd := by funext; rfl
 
 
 

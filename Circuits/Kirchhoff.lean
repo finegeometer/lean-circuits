@@ -11,20 +11,20 @@ structure Kirchhoff (f : 𝔽.Cospan α β) (a : α → ℝ × ℝ) (b : β → 
   -- and the current into any set of wires matches the current out.
   current (S : Set f.center) : ∑ x with f.fwd x ∈ S, (a x).2 = ∑ x with f.bwd x ∈ S, (b x).2
 
-theorem Kirchhoff.congr (e : 𝔽.Cospan.Equiv f g) : Kirchhoff f a b ↔ Kirchhoff g a b := by
-  suffices ∀ f g, 𝔽.Cospan.Equiv f g → Kirchhoff f a b → Kirchhoff g a b by constructor; apply this f g e; apply this g f e.symm
-  clear f g e; intro f g e H
-  constructor
-  · obtain ⟨v,H1,H2⟩ := H.voltage
-    exists v ∘ e.center.symm; constructor
-    · simp [<-H1, <-e.fwd]
-    · simp [<-H2, <-e.bwd]
-  · intro S
-    calc  ∑ x with g.fwd x ∈ S, (a x).2
-      _ = ∑ x with f.fwd x ∈ e.center ⁻¹' S, (a x).2 := ?_
-      _ = ∑ x with f.bwd x ∈ e.center ⁻¹' S, (b x).2 := H.current _
-      _ = ∑ x with g.bwd x ∈ S, (b x).2 := ?_
-    all_goals (congr; funext x; simp only [Set.mem_preimage]; congr; simp [<-e.fwd, <-e.bwd])
+-- theorem Kirchhoff.congr (e : 𝔽.Cospan.Equiv f g) : Kirchhoff f a b ↔ Kirchhoff g a b := by
+--   suffices ∀ f g, 𝔽.Cospan.Equiv f g → Kirchhoff f a b → Kirchhoff g a b by constructor; apply this f g e; apply this g f e.symm
+--   clear f g e; intro f g e H
+--   constructor
+--   · obtain ⟨v,H1,H2⟩ := H.voltage
+--     exists v ∘ e.center.symm; constructor
+--     · simp [<-H1, <-e.fwd]
+--     · simp [<-H2, <-e.bwd]
+--   · intro S
+--     calc  ∑ x with g.fwd x ∈ S, (a x).2
+--       _ = ∑ x with f.fwd x ∈ e.center ⁻¹' S, (a x).2 := ?_
+--       _ = ∑ x with f.bwd x ∈ e.center ⁻¹' S, (b x).2 := H.current _
+--       _ = ∑ x with g.bwd x ∈ S, (b x).2 := ?_
+--     all_goals (congr; funext x; simp only [Set.mem_preimage]; congr; simp [<-e.fwd, <-e.bwd])
 
 
 
