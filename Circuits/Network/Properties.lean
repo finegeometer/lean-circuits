@@ -4,6 +4,7 @@ import «Circuits».Network.Abstract
 
 namespace Network
 
+-- To say a concrete network represents an abstract one is to say they describe the same circuit.
 structure Represents
   {Component : Type} [Inhabited Component]
   {Terminal : Component → Type} [∀ c, FinEnum (Terminal c)]

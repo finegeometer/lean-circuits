@@ -21,7 +21,5 @@ def Abstract.merge (ι : 𝔽) (α : ι → 𝔽) (nets : (i : ι) → Abstract 
   Node := (i : ι) × (nets i).Node
   component := fun ⟨i,n⟩ => (nets i).component n
   wiring := 𝔽.Cospan.comp
-    (𝔽.Cospan.ofFwd $ by
-      simp only
-      exact (Equiv.sigmaAssoc (fun i n => Terminal ((nets i).component n))).toFun)
+    (𝔽.Cospan.ofEquiv $ by exact (Equiv.sigmaAssoc (fun i n => Terminal ((nets i).component n))))
     (𝔽.Cospan.merge (fun i => (nets i).wiring))
